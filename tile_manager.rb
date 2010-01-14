@@ -10,12 +10,12 @@ class TileManager
     @tile_row = start_row - 1
     @offset_x = 0
     @offset_y = 0
-    @width = 4
-    @height = 4
+    width = 4
+    height = 4
     @area = area
     @matrix = TileMatrix.new
-    0.upto(@width - 1) do |col|
-      0.upto(@height - 1) do |row|
+    0.upto(width - 1) do |col|
+      0.upto(height - 1) do |row|
         @matrix[col,row] = TileStorage.tile_for(@tile_col + col, @tile_row + row)
       end
     end
@@ -55,20 +55,20 @@ class TileManager
   def resize(width, height)
     new_width = width / TILE_WIDTH + 2
     new_height = height / TILE_WIDTH + 2
-    if new_width < @width || new_height < @height
+    if new_width < @matrix.width || new_height < @matrix.height
       @matrix.reduce(new_width, new_height)
     else
-      if new_width > @width
-        (@tile_col + @width..@tile_col + new_width - 1).each do |col|
+      if new_width > @matrix.width
+        (@tile_col + @matrix.width..@tile_col + new_width - 1).each do |col|
           column = []
-          (@tile_row..@tile_row + @height - 1).each do |row|
+          (@tile_row..@tile_row + @matrix.height - 1).each do |row|
             column << TileStorage.tile_for(col, row)
           end
           @matrix.add_column(column)
         end
       end
-      if new_height > @height
-        (@tile_row + @height..@tile_row + new_height - 1).each do |r|
+      if new_height > @matrix.height
+        (@tile_row + @matrix.height..@tile_row + new_height - 1).each do |r|
           row = []
           (@tile_col..@tile_col + new_width - 1).each do |col|
             row << TileStorage.tile_for(col, r)
@@ -77,14 +77,12 @@ class TileManager
         end
       end
     end
-    @width = new_width
-    @height = new_height
   end
 
   private
 
   def get_tiles(what, which)
-    size = (what == :row ? @width - 1 : @height - 1)
+    size = (what == :row ? @matrix.width - 1 : @matrix.height - 1)
     col = @tile_col
     row = @tile_row
     if which == :last
