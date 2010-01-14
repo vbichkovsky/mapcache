@@ -13,6 +13,14 @@ class TileMatrix
     @columns[col][row] = value
   end
 
+  def width
+    @columns.size
+  end
+
+  def height
+    @columns[0].size
+  end
+
   def each
     @columns.each_with_index do |row, col_idx|
       row.each_with_index do |value, row_idx|
