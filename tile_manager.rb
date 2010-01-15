@@ -31,21 +31,21 @@ class TileManager
     @offset_x += dx
     @offset_y += dy
 
-    if @offset_x < -TILE_WIDTH
+    if @offset_x <= -TILE_WIDTH
       @offset_x += TILE_WIDTH
       @tile_col += 1
       @matrix.shift_left(get_tiles(:column, :last) )
-    elsif @offset_x > TILE_WIDTH
+    elsif @offset_x >= TILE_WIDTH
       @offset_x -= TILE_WIDTH
       @tile_col -= 1
       @matrix.shift_right(get_tiles(:column, :first) )
     end
 
-    if @offset_y < -TILE_WIDTH
+    if @offset_y <= -TILE_WIDTH
       @offset_y += TILE_WIDTH
       @tile_row += 1
       @matrix.shift_up(get_tiles(:row, :last) )
-    elsif @offset_y > TILE_WIDTH
+    elsif @offset_y >= TILE_WIDTH
       @offset_y -= TILE_WIDTH
       @tile_row -= 1
       @matrix.shift_down(get_tiles(:row, :first) )
