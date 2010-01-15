@@ -53,8 +53,8 @@ class TileManager
   end
 
   def resize(width, height)
-    new_width = width / TILE_WIDTH + 2
-    new_height = height / TILE_WIDTH + 2
+    new_width = width / TILE_WIDTH + 3
+    new_height = height / TILE_WIDTH + 3
     if new_width < @matrix.width || new_height < @matrix.height
       @matrix.reduce(new_width, new_height)
     else
