@@ -2,14 +2,15 @@ require 'tile_matrix.rb'
 require 'tile_storage.rb'
 
 class TileManager
+  attr_reader :tile_row, :tile_col, :offset_x, :offset_y
 
   TILE_WIDTH = 256
 
-  def initialize(area, start_col, start_row)
+  def initialize(area, start_col, start_row, offset_x, offset_y)
     @tile_col = start_col
     @tile_row = start_row
-    @offset_x = 0
-    @offset_y = 0
+    @offset_x = offset_x
+    @offset_y = offset_y
     @area = area
     @matrix = TileMatrix.new
     @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row)
