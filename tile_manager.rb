@@ -6,19 +6,13 @@ class TileManager
   TILE_WIDTH = 256
 
   def initialize(area, start_col, start_row)
-    @tile_col = start_col - 1
-    @tile_row = start_row - 1
+    @tile_col = start_col
+    @tile_row = start_row
     @offset_x = 0
     @offset_y = 0
-    width = 4
-    height = 4
     @area = area
     @matrix = TileMatrix.new
-    0.upto(width - 1) do |col|
-      0.upto(height - 1) do |row|
-        @matrix[col,row] = TileStorage.tile_for(@tile_col + col, @tile_row + row)
-      end
-    end
+    @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row)
   end
 
   def draw
@@ -53,8 +47,8 @@ class TileManager
   end
 
   def resize(width, height)
-    new_width = width / TILE_WIDTH + 3
-    new_height = height / TILE_WIDTH + 3
+    new_width = (width.to_f / TILE_WIDTH).ceil + 2
+    new_height = (height.to_f / TILE_WIDTH).ceil + 2
     if new_width < @matrix.width || new_height < @matrix.height
       @matrix.reduce(new_width, new_height)
     else
@@ -86,7 +80,7 @@ class TileManager
     col = @tile_col
     row = @tile_row
     if which == :last
-      what == :column ? col += size : row += size
+      what == :column ? col += @matrix.width - 1 : row += @matrix.height - 1
     end
     (0..size).map do |index|
       TileStorage.tile_for(col + (what == :row ? index : 0),
