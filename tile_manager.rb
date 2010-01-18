@@ -26,8 +26,8 @@ class TileManager
     @offset_x += dx
     @offset_y += dy
 
-    if @offset_x <= -TILE_WIDTH
-      @offset_x += TILE_WIDTH
+    if @offset_x < 0
+      @offset_x = TILE_WIDTH + @offset_x
       @tile_col += 1
       @matrix.shift_left(get_tiles(:column, :last) )
     elsif @offset_x >= TILE_WIDTH
@@ -36,8 +36,8 @@ class TileManager
       @matrix.shift_right(get_tiles(:column, :first) )
     end
 
-    if @offset_y <= -TILE_WIDTH
-      @offset_y += TILE_WIDTH
+    if @offset_y < 0
+      @offset_y = TILE_WIDTH + @offset_y
       @tile_row += 1
       @matrix.shift_up(get_tiles(:row, :last) )
     elsif @offset_y >= TILE_WIDTH
