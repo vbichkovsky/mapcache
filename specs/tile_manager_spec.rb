@@ -14,7 +14,7 @@ describe TileManager do
   before do
     @matrix = TileMatrix.new
     TileMatrix.stub!(:new).and_return(@matrix)
-    TileStorage.stub!(:tile_for).and_return {|x, y| "#{x},#{y}"}
+    TileStorage.stub!(:tile_for).and_return {|x, y, zoom| "#{x},#{y}"}
     @manager = TileManager.new(nil, 99, 199, 0, 0)
     @manager.resize(TileManager::TILE_WIDTH * 3, TileManager::TILE_WIDTH * 2)
     @initial_dump = matrix_dump
