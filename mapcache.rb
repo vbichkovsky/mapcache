@@ -34,7 +34,11 @@ area.signal_connect('button_press_event') do |w, e|
 end
 
 area.signal_connect('scroll_event') do |w, e|
-  tile_manager.zoom_in(e.x, e.y) if e.direction == Gdk::EventScroll::Direction::UP
+  if e.direction == Gdk::EventScroll::Direction::UP
+    tile_manager.zoom_in(e.x, e.y)
+  elsif e.direction == Gdk::EventScroll::Direction::DOWN
+    tile_manager.zoom_out(e.x, e.y)
+  end
 end
 
 area.signal_connect('button_release_event') do |w, e|

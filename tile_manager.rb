@@ -35,6 +35,26 @@ class TileManager
     draw
   end
 
+  def zoom_out(x, y)
+    @zoom -= 1
+    cursor_col = @tile_col + (x - @offset_x).to_i / TILE_WIDTH + 1
+    col_in_the_middle = cursor_col / 2
+    l_dist = ( (x - @offset_x).to_i % TILE_WIDTH + (cursor_col.even? ? 0 : TILE_WIDTH) ) / 2
+    @offset_x = (@width / 2 - l_dist) % TILE_WIDTH
+    @tile_col = col_in_the_middle - ( (@width / 2 - l_dist) / TILE_WIDTH ) - 1
+
+    cursor_row = @tile_row + (y - @offset_y).to_i / TILE_WIDTH + 1
+    row_in_the_middle = cursor_row / 2
+    t_dist = ( (y - @offset_y).to_i % TILE_WIDTH + (cursor_row.even? ? 0 : TILE_WIDTH) ) / 2
+    @offset_y = (@height / 2 - t_dist) % TILE_WIDTH
+    @tile_row = row_in_the_middle - ( (@height / 2 - t_dist) / TILE_WIDTH) - 1
+
+    @matrix = TileMatrix.new
+    @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row, @zoom)
+    resize(@width, @height)
+    draw
+  end
+
   def draw
     @matrix.each do |col, row, tile|
       draw_tile(tile, TILE_WIDTH * (col - 1), TILE_WIDTH * (row - 1))
