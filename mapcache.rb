@@ -36,8 +36,10 @@ end
 area.signal_connect('scroll_event') do |w, e|
   if e.direction == Gdk::EventScroll::Direction::UP
     tile_manager.zoom_in(e.x, e.y)
+    tile_manager.draw
   elsif e.direction == Gdk::EventScroll::Direction::DOWN
     tile_manager.zoom_out(e.x, e.y)
+    tile_manager.draw
   end
 end
 

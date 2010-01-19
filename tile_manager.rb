@@ -7,52 +7,29 @@ class TileManager
   TILE_WIDTH = 256
 
   def initialize(area, start_col, start_row, zoom, offset_x, offset_y)
+    @area = area
     @zoom = zoom
     @tile_col = start_col
     @tile_row = start_row
     @offset_x = offset_x
     @offset_y = offset_y
-    @area = area
-    @matrix = TileMatrix.new
-    @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row, @zoom)
+    initialize_matrix
   end
 
   def zoom_in(x, y)
     @zoom += 1
-    col_in_the_middle = @tile_col * 2 + 2 + (x - @offset_x).to_i / (TILE_WIDTH / 2)
-    l_dist = 2 * ( (x - @offset_x).to_i % (TILE_WIDTH / 2) )
-    @offset_x = (@width / 2 - l_dist) % TILE_WIDTH
-    @tile_col = col_in_the_middle - ( (@width / 2 - l_dist) / TILE_WIDTH ) - 1
-
-    row_in_the_middle = @tile_row * 2 + 2 + (y - @offset_y).to_i / (TILE_WIDTH / 2)
-    t_dist = 2 * ( (y - @offset_y).to_i % (TILE_WIDTH / 2) )
-    @offset_y = (@height / 2 - t_dist) % TILE_WIDTH
-    @tile_row = row_in_the_middle - ( (@height / 2 - t_dist) / TILE_WIDTH) - 1
-
-    @matrix = TileMatrix.new
-    @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row, @zoom)
+    @offset_x, @tile_col = calc_start_and_offset_zoom_in(@tile_col, x, @offset_x, @width)
+    @offset_y, @tile_row = calc_start_and_offset_zoom_in(@tile_row, y, @offset_y, @height)
+    initialize_matrix
     resize(@width, @height)
-    draw
   end
 
   def zoom_out(x, y)
     @zoom -= 1
-    cursor_col = @tile_col + (x - @offset_x).to_i / TILE_WIDTH + 1
-    col_in_the_middle = cursor_col / 2
-    l_dist = ( (x - @offset_x).to_i % TILE_WIDTH + (cursor_col.even? ? 0 : TILE_WIDTH) ) / 2
-    @offset_x = (@width / 2 - l_dist) % TILE_WIDTH
-    @tile_col = col_in_the_middle - ( (@width / 2 - l_dist) / TILE_WIDTH ) - 1
-
-    cursor_row = @tile_row + (y - @offset_y).to_i / TILE_WIDTH + 1
-    row_in_the_middle = cursor_row / 2
-    t_dist = ( (y - @offset_y).to_i % TILE_WIDTH + (cursor_row.even? ? 0 : TILE_WIDTH) ) / 2
-    @offset_y = (@height / 2 - t_dist) % TILE_WIDTH
-    @tile_row = row_in_the_middle - ( (@height / 2 - t_dist) / TILE_WIDTH) - 1
-
-    @matrix = TileMatrix.new
-    @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row, @zoom)
+    @offset_x, @tile_col = calc_start_and_offset_zoom_out(@tile_col, x, @offset_x, @width)
+    @offset_y, @tile_row = calc_start_and_offset_zoom_out(@tile_row, y, @offset_y, @height)
+    initialize_matrix
     resize(@width, @height)
-    draw
   end
 
   def draw
@@ -122,6 +99,30 @@ class TileManager
   end
 
   private
+
+  def calc_start_and_offset_zoom_in(start_idx, cursor_pos, offset, viewport_size)
+    middle_tile_idx = start_idx * 2 + 2 + (cursor_pos - offset).to_i / (TILE_WIDTH / 2)
+    from_edge = 2 * ( (cursor_pos - offset).to_i % (TILE_WIDTH / 2) )
+    calc_offset_and_first_idx(middle_tile_idx, viewport_size, from_edge)
+  end
+
+  def calc_start_and_offset_zoom_out(start_idx, cursor_pos, offset, viewport_size)
+    cursor_tile_idx = start_idx + (cursor_pos - offset).to_i / TILE_WIDTH + 1
+    middle_tile_idx = cursor_tile_idx / 2
+    from_edge = ( (cursor_pos - offset).to_i % TILE_WIDTH + 
+                  (cursor_tile_idx.even? ? 0 : TILE_WIDTH) ) / 2
+    calc_offset_and_first_idx(middle_tile_idx, viewport_size, from_edge)
+  end
+
+  def calc_offset_and_first_idx(middle_idx, viewport_size, from_tile_edge)
+    [ (viewport_size / 2 - from_tile_edge) % TILE_WIDTH,
+      middle_idx - ( (viewport_size / 2 - from_tile_edge) / TILE_WIDTH ) - 1 ]
+  end
+
+  def initialize_matrix
+    @matrix = TileMatrix.new
+    @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row, @zoom)
+  end    
 
   def get_tiles(what, which)
     size = (what == :row ? @matrix.width - 1 : @matrix.height - 1)
