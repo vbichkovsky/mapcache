@@ -2,12 +2,12 @@ require 'tile_matrix.rb'
 require 'tile_storage.rb'
 
 class TileManager
-  attr_reader :tile_row, :tile_col, :offset_x, :offset_y
+  attr_reader :tile_row, :tile_col, :offset_x, :offset_y, :zoom
 
   TILE_WIDTH = 256
 
-  def initialize(area, start_col, start_row, offset_x, offset_y)
-    @zoom = 9
+  def initialize(area, start_col, start_row, zoom, offset_x, offset_y)
+    @zoom = zoom
     @tile_col = start_col
     @tile_row = start_row
     @offset_x = offset_x

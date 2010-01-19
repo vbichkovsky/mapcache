@@ -11,13 +11,14 @@ $start_y = 0
 $pan = false
 
 config = {'width' => 512, 'height' => 512, 'col' => 288, 'row' => 155,
-  'offset_x' => 0, 'offset_y' => 0}
+  'offset_x' => 0, 'offset_y' => 0, 'zoom' => 9}
+
 if File.exist?('config.yml')
   config = YAML::load_file('config.yml')
 end
 
 area = Gtk::DrawingArea.new
-tile_manager = TileManager.new(area, config['col'], config['row'],
+tile_manager = TileManager.new(area, config['col'], config['row'], config['zoom'],
                                config['offset_x'], config['offset_y'])
 
 area.add_events(Gdk::Event::BUTTON_PRESS_MASK |
@@ -61,11 +62,12 @@ window.resize(config['width'], config['height'])
    size = window.size
    config['width'] = size[0]
    config['height'] = size[1]
-#   config['col'] = tile_manager.tile_col
-#   config['row'] = tile_manager.tile_row
-#   config['offset_x'] = tile_manager.offset_x
-#   config['offset_y'] = tile_manager.offset_y
-#   open('config.yml', 'w') { |f| YAML.dump(config, f) }
+   config['col'] = tile_manager.tile_col
+   config['row'] = tile_manager.tile_row
+   config['offset_x'] = tile_manager.offset_x
+   config['offset_y'] = tile_manager.offset_y
+   config['zoom'] = tile_manager.zoom
+   open('config.yml', 'w') { |f| YAML.dump(config, f) }
    Gtk.main_quit
  end
 
