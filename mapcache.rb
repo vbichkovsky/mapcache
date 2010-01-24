@@ -31,9 +31,17 @@ class MapFrame < Wx::Frame
    open('config.yml', 'w') { |f| YAML.dump(config, f) }
   end
 
+  def image_loaded(tile)
+    puts "downloaded #{tile.url}"
+    self.refresh
+  end
+
   def initialize
     config = load_config
     super(nil, :title => "Map cache", :pos => [150, 25], :size => [config['width'], config['height']])
+
+    DownloadManager.set_observer(self)
+
     @manager = TileManager.new(config['col'], config['row'], config['zoom'], 
                                config['offset_x'], config['offset_y'])
     @manager.resize(self.size.width, self.size.height)

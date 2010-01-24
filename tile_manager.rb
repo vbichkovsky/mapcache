@@ -33,7 +33,6 @@ class TileManager
     @matrix.each do |col, row, tile|
       tile.draw(dc, Tile::TILE_WIDTH * (col - 1) + @offset_x, Tile::TILE_WIDTH * (row - 1) + @offset_y)
     end
-    draw_cross(dc)
   end
 
   def pan(dx, dy)
@@ -126,13 +125,6 @@ class TileManager
     (0..size).map do |index|
       Tile.new(col + (what == :row ? index : 0),
                row + (what == :column ? index : 0), @zoom)
-    end
-  end
-
-  def draw_cross(dc)
-    if @width && @height
-      dc.draw_line(@width / 2 - 5, @height / 2, @width / 2 + 6, @height / 2)
-      dc.draw_line(@width / 2, @height / 2 - 5, @width / 2, @height / 2 + 6)
     end
   end
 
