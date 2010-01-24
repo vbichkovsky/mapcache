@@ -1,10 +1,8 @@
 require 'tile_matrix.rb'
-require 'tile_storage.rb'
+require 'tile.rb'
 
 class TileManager
   attr_reader :tile_row, :tile_col, :offset_x, :offset_y, :zoom
-
-  TILE_WIDTH = 256
 
   def initialize(start_col, start_row, zoom, offset_x, offset_y)
     @zoom = zoom
@@ -33,7 +31,7 @@ class TileManager
 
   def draw(dc)
     @matrix.each do |col, row, tile|
-      draw_tile(dc, tile, TILE_WIDTH * (col - 1), TILE_WIDTH * (row - 1))
+      tile.draw(dc, Tile::TILE_WIDTH * (col - 1) + @offset_x, Tile::TILE_WIDTH * (row - 1) + @offset_y)
     end
     draw_cross(dc)
   end
@@ -43,21 +41,21 @@ class TileManager
     @offset_y += dy
 
     if @offset_x < 0
-      @offset_x = TILE_WIDTH + @offset_x
+      @offset_x = Tile::TILE_WIDTH + @offset_x
       @tile_col += 1
       @matrix.shift_left(get_tiles(:column, :last) )
-    elsif @offset_x >= TILE_WIDTH
-      @offset_x -= TILE_WIDTH
+    elsif @offset_x >= Tile::TILE_WIDTH
+      @offset_x -= Tile::TILE_WIDTH
       @tile_col -= 1
       @matrix.shift_right(get_tiles(:column, :first) )
     end
 
     if @offset_y < 0
-      @offset_y = TILE_WIDTH + @offset_y
+      @offset_y = Tile::TILE_WIDTH + @offset_y
       @tile_row += 1
       @matrix.shift_up(get_tiles(:row, :last) )
-    elsif @offset_y >= TILE_WIDTH
-      @offset_y -= TILE_WIDTH
+    elsif @offset_y >= Tile::TILE_WIDTH
+      @offset_y -= Tile::TILE_WIDTH
       @tile_row -= 1
       @matrix.shift_down(get_tiles(:row, :first) )
     end
@@ -66,8 +64,8 @@ class TileManager
   def resize(width, height)
     @width = width.to_i
     @height = height.to_i
-    new_width = (width.to_f / TILE_WIDTH).ceil + 2
-    new_height = (height.to_f / TILE_WIDTH).ceil + 2
+    new_width = (width.to_f / Tile::TILE_WIDTH).ceil + 2
+    new_height = (height.to_f / Tile::TILE_WIDTH).ceil + 2
     if new_width < @matrix.width || new_height < @matrix.height
       @matrix.reduce(new_width, new_height)
     else
@@ -75,7 +73,7 @@ class TileManager
         (@tile_col + @matrix.width..@tile_col + new_width - 1).each do |col|
           column = []
           (@tile_row..@tile_row + @matrix.height - 1).each do |row|
-            column << TileStorage.tile_for(col, row, @zoom)
+            column << Tile.new(col, row, @zoom)
           end
           @matrix.add_column(column)
         end
@@ -84,7 +82,7 @@ class TileManager
         (@tile_row + @matrix.height..@tile_row + new_height - 1).each do |r|
           row = []
           (@tile_col..@tile_col + new_width - 1).each do |col|
-            row << TileStorage.tile_for(col, r, @zoom)
+            row << Tile.new(col, r, @zoom)
           end
           @matrix.add_row(row)
         end
@@ -95,27 +93,27 @@ class TileManager
   private
 
   def calc_start_and_offset_zoom_in(start_idx, cursor_pos, offset, viewport_size)
-    middle_tile_idx = start_idx * 2 + 2 + (cursor_pos - offset).to_i / (TILE_WIDTH / 2)
-    from_edge = 2 * ( (cursor_pos - offset).to_i % (TILE_WIDTH / 2) )
+    middle_tile_idx = start_idx * 2 + 2 + (cursor_pos - offset).to_i / (Tile::TILE_WIDTH / 2)
+    from_edge = 2 * ( (cursor_pos - offset).to_i % (Tile::TILE_WIDTH / 2) )
     calc_offset_and_first_idx(middle_tile_idx, viewport_size, from_edge)
   end
 
   def calc_start_and_offset_zoom_out(start_idx, cursor_pos, offset, viewport_size)
-    cursor_tile_idx = start_idx + (cursor_pos - offset).to_i / TILE_WIDTH + 1
+    cursor_tile_idx = start_idx + (cursor_pos - offset).to_i / Tile::TILE_WIDTH + 1
     middle_tile_idx = cursor_tile_idx / 2
-    from_edge = ( (cursor_pos - offset).to_i % TILE_WIDTH + 
-                  (cursor_tile_idx.even? ? 0 : TILE_WIDTH) ) / 2
+    from_edge = ( (cursor_pos - offset).to_i % Tile::TILE_WIDTH + 
+                  (cursor_tile_idx.even? ? 0 : Tile::TILE_WIDTH) ) / 2
     calc_offset_and_first_idx(middle_tile_idx, viewport_size, from_edge)
   end
 
   def calc_offset_and_first_idx(middle_idx, viewport_size, from_tile_edge)
-    [ (viewport_size / 2 - from_tile_edge) % TILE_WIDTH,
-      middle_idx - ( (viewport_size / 2 - from_tile_edge) / TILE_WIDTH ) - 1 ]
+    [ (viewport_size / 2 - from_tile_edge) % Tile::TILE_WIDTH,
+      middle_idx - ( (viewport_size / 2 - from_tile_edge) / Tile::TILE_WIDTH ) - 1 ]
   end
 
   def initialize_matrix
     @matrix = TileMatrix.new
-    @matrix[0,0] = TileStorage.tile_for(@tile_col, @tile_row, @zoom)
+    @matrix[0,0] = Tile.new(@tile_col, @tile_row, @zoom)
   end    
 
   def get_tiles(what, which)
@@ -126,15 +124,9 @@ class TileManager
       what == :column ? col += @matrix.width - 1 : row += @matrix.height - 1
     end
     (0..size).map do |index|
-      TileStorage.tile_for(col + (what == :row ? index : 0),
+      Tile.new(col + (what == :row ? index : 0),
                row + (what == :column ? index : 0), @zoom)
     end
-  end
-
-  def draw_tile(dc, tile, x, y)
-    dc.draw_bitmap(tile, x + @offset_x, y + @offset_y, false)
-    dc.brush = Wx::TRANSPARENT_BRUSH
-    dc.draw_rectangle(x + @offset_x, y + @offset_y, TILE_WIDTH, TILE_WIDTH)
   end
 
   def draw_cross(dc)
