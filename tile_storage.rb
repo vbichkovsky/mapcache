@@ -4,7 +4,8 @@ require 'fileutils'
 class TileStorage
 
   def self.tile_for(x, y, zoom)
-    Gdk::Pixbuf.new(path_to_tile(x, y, zoom))
+    image = Wx::Image.new(path_to_tile(x, y, zoom), Wx::BITMAP_TYPE_PNG)
+    Wx::Bitmap.from_image(image)
   end    
 
   private

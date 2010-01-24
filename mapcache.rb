@@ -1,87 +1,88 @@
 #!/usr/bin/ruby
 
-require 'gtk2'
+require 'rubygems'
+require 'wx'
 require 'tile_manager.rb'
 require 'yaml'
 
-$offset_x = 0
-$offset_y = 0
-$start_x = 0
-$start_y = 0
-$pan = false
+class MapFrame < Wx::Frame
 
-config = {'width' => 512, 'height' => 512, 'col' => 288, 'row' => 155,
-  'offset_x' => 0, 'offset_y' => 0, 'zoom' => 9}
-
-if File.exist?('config.yml')
-  config = YAML::load_file('config.yml')
-end
-
-area = Gtk::DrawingArea.new
-tile_manager = TileManager.new(area, config['col'], config['row'], config['zoom'],
-                               config['offset_x'], config['offset_y'])
-
-area.add_events(Gdk::Event::BUTTON_PRESS_MASK |
-                Gdk::Event::BUTTON_MOTION_MASK |
-                Gdk::Event::BUTTON_RELEASE_MASK |
-                Gdk::Event::SCROLL_MASK
-                )
-
-area.signal_connect('button_press_event') do |w, e|
-  $start_x = e.x
-  $start_y = e.y
-  $pan = true
-end
-
-area.signal_connect('scroll_event') do |w, e|
-  if e.direction == Gdk::EventScroll::Direction::UP
-    tile_manager.zoom_in(e.x, e.y)
-    tile_manager.draw
-  elsif e.direction == Gdk::EventScroll::Direction::DOWN
-    tile_manager.zoom_out(e.x, e.y)
-    tile_manager.draw
+  def draw_map
+    paint {|dc| @manager.draw(dc) }
   end
-end
 
-area.signal_connect('button_release_event') do |w, e|
-  $pan = false
-end
-
-area.signal_connect('motion_notify_event') do |w, e|
-  if $pan
-    tile_manager.pan(e.x - $start_x, e.y - $start_y)
-    $start_x = e.x
-    $start_y = e.y
-    w.signal_emit('expose_event', nil)
+  def load_config
+    if File.exist?('config.yml')
+      YAML::load_file('config.yml')
+    else
+      {'width' => 512, 'height' => 512, 'col' => 288, 'row' => 155,
+        'offset_x' => 0, 'offset_y' => 0, 'zoom' => 9}
+    end
   end
-end
 
-area.signal_connect('expose_event') do
-  tile_manager.draw
-end
-
-window = Gtk::Window.new
-window.add(area)
-window.resize(config['width'], config['height'])
-
- window.signal_connect('delete_event') do
-   size = window.size
-   config['width'] = size[0]
-   config['height'] = size[1]
-   config['col'] = tile_manager.tile_col
-   config['row'] = tile_manager.tile_row
-   config['offset_x'] = tile_manager.offset_x
-   config['offset_y'] = tile_manager.offset_y
-   config['zoom'] = tile_manager.zoom
+  def save_config
+    config = {'width' => self.size.width,
+      'height' => self.size.height,
+      'col' => @manager.tile_col,
+      'row' => @manager.tile_row,
+      'offset_x' => @manager.offset_x,
+      'offset_y' => @manager.offset_y,
+      'zoom' => @manager.zoom }
    open('config.yml', 'w') { |f| YAML.dump(config, f) }
-   Gtk.main_quit
- end
+  end
 
-window.signal_connect('configure_event') do |w, e|
-  tile_manager.resize(e.width, e.height)
+  def initialize
+    config = load_config
+    super(nil, :title => "Map cache", :pos => [150, 25], :size => [config['width'], config['height']])
+    @manager = TileManager.new(config['col'], config['row'], config['zoom'], 
+                               config['offset_x'], config['offset_y'])
+    @manager.resize(self.size.width, self.size.height)
+
+    @pan = false
+
+    evt_left_down do |event|
+      @pan = true
+      @start_x = event.x
+      @start_y = event.y
+      event.skip
+    end
+
+    evt_left_up {|event| @pan = false}
+
+    evt_motion do |event|
+      if @pan
+        @manager.pan(event.x - @start_x, event.y - @start_y)
+        @start_x = event.x
+        @start_y = event.y
+        draw_map
+      end
+    end
+
+    evt_mousewheel do |event|
+      if event.wheel_rotation > 0
+        @manager.zoom_in(event.x, event.y)
+      else
+        @manager.zoom_out(event.x, event.y)
+      end
+      draw_map
+    end
+
+    evt_paint {|event| draw_map}
+
+    evt_size {|event| @manager.resize(event.size.width, event.size.height)}
+
+    evt_close do |event| 
+      save_config
+      destroy
+    end
+
+    show
+  end
 end
 
-window.show_all
-tile_manager.draw
+Wx::App.run do 
+  MapFrame.new
+end
 
-Gtk.main
+
+

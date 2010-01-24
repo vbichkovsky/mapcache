@@ -6,8 +6,7 @@ class TileManager
 
   TILE_WIDTH = 256
 
-  def initialize(area, start_col, start_row, zoom, offset_x, offset_y)
-    @area = area
+  def initialize(start_col, start_row, zoom, offset_x, offset_y)
     @zoom = zoom
     @tile_col = start_col
     @tile_row = start_row
@@ -32,16 +31,11 @@ class TileManager
     resize(@width, @height)
   end
 
-  def draw
+  def draw(dc)
     @matrix.each do |col, row, tile|
-      draw_tile(tile, TILE_WIDTH * (col - 1), TILE_WIDTH * (row - 1))
+      draw_tile(dc, tile, TILE_WIDTH * (col - 1), TILE_WIDTH * (row - 1))
     end
-    if @width && @height
-      @area.window.draw_line(@area.style.fg_gc(@area.state),
-                             @width / 2 - 5, @height / 2, @width / 2 + 5, @height / 2)
-      @area.window.draw_line(@area.style.fg_gc(@area.state), 
-                             @width / 2, @height / 2 - 5, @width / 2, @height / 2 + 5)
-    end
+    draw_cross(dc)
   end
 
   def pan(dx, dy)
@@ -137,13 +131,17 @@ class TileManager
     end
   end
 
-  def draw_tile(tile, x, y)
-    @area.window.draw_pixbuf(@area.style.fg_gc(@area.state), tile,
-                            0, 0, x + @offset_x, y + @offset_y,
-                            -1, -1, Gdk::RGB::Dither::NONE, 0, 0)
-    @area.window.draw_rectangle(@area.style.fg_gc(@area.state), false,
-                                x + @offset_x, y + @offset_y, TILE_WIDTH - 1,
-                                TILE_WIDTH - 1)
+  def draw_tile(dc, tile, x, y)
+    dc.draw_bitmap(tile, x + @offset_x, y + @offset_y, false)
+    dc.brush = Wx::TRANSPARENT_BRUSH
+    dc.draw_rectangle(x + @offset_x, y + @offset_y, TILE_WIDTH, TILE_WIDTH)
+  end
+
+  def draw_cross(dc)
+    if @width && @height
+      dc.draw_line(@width / 2 - 5, @height / 2, @width / 2 + 6, @height / 2)
+      dc.draw_line(@width / 2, @height / 2 - 5, @width / 2, @height / 2 + 6)
+    end
   end
 
 end
