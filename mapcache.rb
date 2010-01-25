@@ -3,12 +3,13 @@
 require 'rubygems'
 require 'wx'
 require 'tile_manager.rb'
+require 'matrix_manager.rb'
 require 'yaml'
 
 class MapFrame < Wx::Frame
 
   def draw_map
-    paint {|dc| @manager.draw(dc) }
+    paint {|dc| @matrix_mgr.draw(dc) }
   end
 
   def load_config
@@ -23,28 +24,28 @@ class MapFrame < Wx::Frame
   def save_config
     config = {'width' => self.size.width,
       'height' => self.size.height,
-      'col' => @manager.tile_col,
-      'row' => @manager.tile_row,
-      'offset_x' => @manager.offset_x,
-      'offset_y' => @manager.offset_y,
-      'zoom' => @manager.zoom }
+      'col' => @matrix_mgr.tile_col,
+      'row' => @matrix_mgr.tile_row,
+      'offset_x' => @matrix_mgr.offset_x,
+      'offset_y' => @matrix_mgr.offset_y,
+      'zoom' => @matrix_mgr.zoom }
    open('config.yml', 'w') { |f| YAML.dump(config, f) }
   end
 
-  def image_loaded(tile)
+  def tile_loaded(tile)
     puts "downloaded #{tile.url}"
     self.refresh
   end
 
   def initialize
     config = load_config
-    super(nil, :title => "Map cache", :pos => [150, 25], :size => [config['width'], config['height']])
+    super(nil, :title => "Map cache", :pos => [150, 25], 
+          :size => [config['width'], config['height']])
 
-    DownloadManager.set_observer(self)
-
-    @manager = TileManager.new(config['col'], config['row'], config['zoom'], 
-                               config['offset_x'], config['offset_y'])
-    @manager.resize(self.size.width, self.size.height)
+    @tile_mgr = TileManager.new(self)
+    @matrix_mgr = MatrixManager.new(config['col'], config['row'], config['zoom'], 
+                                    config['offset_x'], config['offset_y'], @tile_mgr)
+    @matrix_mgr.resize(self.size.width, self.size.height)
 
     @pan = false
 
@@ -59,7 +60,7 @@ class MapFrame < Wx::Frame
 
     evt_motion do |event|
       if @pan
-        @manager.pan(event.x - @start_x, event.y - @start_y)
+        @matrix_mgr.pan(event.x - @start_x, event.y - @start_y)
         @start_x = event.x
         @start_y = event.y
         draw_map
@@ -68,16 +69,16 @@ class MapFrame < Wx::Frame
 
     evt_mousewheel do |event|
       if event.wheel_rotation > 0
-        @manager.zoom_in(event.x, event.y)
+        @matrix_mgr.zoom_in(event.x, event.y)
       else
-        @manager.zoom_out(event.x, event.y)
+        @matrix_mgr.zoom_out(event.x, event.y)
       end
       draw_map
     end
 
     evt_paint {|event| draw_map}
 
-    evt_size {|event| @manager.resize(event.size.width, event.size.height)}
+    evt_size {|event| @matrix_mgr.resize(event.size.width, event.size.height)}
 
     evt_close do |event| 
       save_config

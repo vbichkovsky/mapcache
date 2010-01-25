@@ -1,21 +1,9 @@
-require 'fileutils'
-require 'download_manager.rb'
-
 class Tile
-
-  TILE_WIDTH = 256
-
+  
   def initialize(x, y, zoom)
     @x = x
     @y = y
     @zoom = zoom
-    if File.exist?(self.path)
-      load_image
-    else
-      dir = File.dirname(self.path)
-      FileUtils.mkdir_p dir if !File.exist?(dir)
-      DownloadManager.enqueue(self)
-    end
   end
 
   def load_image
@@ -23,14 +11,14 @@ class Tile
     @bitmap = Wx::Bitmap.from_image(image)
   end
 
-  def draw(dc, x, y)
+  def draw(dc, x, y, width, height)
     if @bitmap
       dc.draw_bitmap(@bitmap, x, y, false) 
       dc.brush = Wx::TRANSPARENT_BRUSH
-      dc.draw_rectangle(x, y, TILE_WIDTH, TILE_WIDTH)
+      dc.draw_rectangle(x, y, width, height)
     else
       dc.brush = Wx::GREY_BRUSH
-      dc.draw_rectangle(x, y, TILE_WIDTH, TILE_WIDTH)
+      dc.draw_rectangle(x, y, width, height)
     end
   end
 

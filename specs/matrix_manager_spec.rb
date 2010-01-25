@@ -1,6 +1,6 @@
-require File.dirname(__FILE__) + '/../tile_manager.rb'
+require File.dirname(__FILE__) + '/../matrix_manager.rb'
 
-describe TileManager do
+describe MatrixManager do
 
   def matrix_dump
     result = []
@@ -14,9 +14,10 @@ describe TileManager do
   before do
     @matrix = TileMatrix.new
     TileMatrix.stub!(:new).and_return(@matrix)
-    TileStorage.stub!(:tile_for).and_return {|x, y, zoom| "#{x},#{y}"}
-    @manager = TileManager.new(nil, 99, 199, 9, 0, 0)
-    @manager.resize(TileManager::TILE_WIDTH * 3, TileManager::TILE_WIDTH * 2)
+    mgr = stub("tile manager")
+    mgr.stub!(:get_tile).and_return {|x, y, zoom| "#{x},#{y}"}
+    @manager = MatrixManager.new(99, 199, 9, 0, 0, mgr)
+    @manager.resize(TILE_WIDTH * 3, TILE_WIDTH * 2)
     @initial_dump = matrix_dump
   end
 
@@ -32,12 +33,12 @@ describe TileManager do
   end
 
   it "resizing window without changing matrix" do
-    @manager.resize(TileManager::TILE_WIDTH * 3 - 10, TileManager::TILE_WIDTH * 2 - 10)
+    @manager.resize(TILE_WIDTH * 3 - 10, TILE_WIDTH * 2 - 10)
     matrix_dump.should == @initial_dump
   end
 
   it "resizing - growing in width" do
-    @manager.resize(TileManager::TILE_WIDTH * 3 + 10, TileManager::TILE_WIDTH * 2)
+    @manager.resize(TILE_WIDTH * 3 + 10, TILE_WIDTH * 2)
     @matrix.width.should == 6
     @matrix.height.should == 4
     matrix_dump.should == [
@@ -49,7 +50,7 @@ describe TileManager do
   end
 
   it "resizing - growing in both width and height" do
-    @manager.resize(TileManager::TILE_WIDTH * 3 + 10, TileManager::TILE_WIDTH * 2 + 10)
+    @manager.resize(TILE_WIDTH * 3 + 10, TILE_WIDTH * 2 + 10)
     @matrix.width.should == 6
     @matrix.height.should == 5
     matrix_dump.should == [
@@ -62,7 +63,7 @@ describe TileManager do
   end
 
   it "resizing - reducing width" do
-    @manager.resize(TileManager::TILE_WIDTH * 2, TileManager::TILE_WIDTH * 2)
+    @manager.resize(TILE_WIDTH * 2, TILE_WIDTH * 2)
     @matrix.width.should == 4
     @matrix.height.should == 4
     matrix_dump.should == [
@@ -74,7 +75,7 @@ describe TileManager do
   end    
 
   it "resizing - reducing both width and height" do
-    @manager.resize(TileManager::TILE_WIDTH * 2, TileManager::TILE_WIDTH)
+    @manager.resize(TILE_WIDTH * 2, TILE_WIDTH)
     @matrix.width.should == 4
     @matrix.height.should == 3
     matrix_dump.should == [
@@ -85,14 +86,14 @@ describe TileManager do
   end    
 
   it "panning without changing matrix" do
-    @manager.pan(TileManager::TILE_WIDTH - 10, TileManager::TILE_WIDTH - 20)
+    @manager.pan(TILE_WIDTH - 10, TILE_WIDTH - 20)
     matrix_dump.should == @initial_dump
-    @manager.offset_x.should == TileManager::TILE_WIDTH - 10
-    @manager.offset_y.should == TileManager::TILE_WIDTH - 20
+    @manager.offset_x.should == TILE_WIDTH - 10
+    @manager.offset_y.should == TILE_WIDTH - 20
   end
 
   it "panning by 1 column to the right" do
-    @manager.pan(TileManager::TILE_WIDTH, 0)
+    @manager.pan(TILE_WIDTH, 0)
     matrix_dump.should == [
                            ["98,199", "99,199", "100,199", "101,199", "102,199"],
                            ["98,200", "99,200", "100,200", "101,200", "102,200"],
@@ -103,7 +104,7 @@ describe TileManager do
   end
 
   it "panning by 1 column right, 1 row down" do
-    @manager.pan(TileManager::TILE_WIDTH + 10, TileManager::TILE_WIDTH + 12)
+    @manager.pan(TILE_WIDTH + 10, TILE_WIDTH + 12)
     matrix_dump.should == [
                            ["98,198", "99,198", "100,198", "101,198", "102,198"],
                            ["98,199", "99,199", "100,199", "101,199", "102,199"],
@@ -122,7 +123,7 @@ describe TileManager do
                            ["100,201", "101,201", "102,201", "103,201", "104,201"],
                            ["100,202", "101,202", "102,202", "103,202", "104,202"]
                           ]
-    @manager.offset_x.should == TileManager::TILE_WIDTH - 1
+    @manager.offset_x.should == TILE_WIDTH - 1
   end
 
   it "panning by 1 column left, 1 row up" do
@@ -133,14 +134,14 @@ describe TileManager do
                            ["100,202", "101,202", "102,202", "103,202", "104,202"],
                            ["100,203", "101,203", "102,203", "103,203", "104,203"]
                           ]
-    @manager.offset_x.should == TileManager::TILE_WIDTH - 12
-    @manager.offset_y.should == TileManager::TILE_WIDTH - 3
+    @manager.offset_x.should == TILE_WIDTH - 12
+    @manager.offset_y.should == TILE_WIDTH - 3
   end
 
   it "cumulative panning" do
     @manager.pan(10, 12)
     matrix_dump.should == @initial_dump
-    @manager.pan(TileManager::TILE_WIDTH - 3, TileManager::TILE_WIDTH - 6)
+    @manager.pan(TILE_WIDTH - 3, TILE_WIDTH - 6)
     matrix_dump.should == [
                            ["98,198", "99,198", "100,198", "101,198", "102,198"],
                            ["98,199", "99,199", "100,199", "101,199", "102,199"],
