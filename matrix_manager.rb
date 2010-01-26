@@ -2,6 +2,7 @@ require 'tile_matrix.rb'
 require 'tile_manager.rb'
 
 TILE_WIDTH = 256
+MAX_ZOOM = 19
 
 class MatrixManager
   attr_reader :tile_row, :tile_col, :offset_x, :offset_y, :zoom
@@ -17,19 +18,23 @@ class MatrixManager
   end
 
   def zoom_in(x, y)
-    @zoom += 1
-    @offset_x, @tile_col = calc_start_and_offset_zoom_in(@tile_col, x, @offset_x, @width)
-    @offset_y, @tile_row = calc_start_and_offset_zoom_in(@tile_row, y, @offset_y, @height)
-    initialize_matrix
-    resize(@width, @height)
+    if @zoom < MAX_ZOOM
+      @zoom += 1
+      @offset_x, @tile_col = calc_start_and_offset_zoom_in(@tile_col, x, @offset_x, @width)
+      @offset_y, @tile_row = calc_start_and_offset_zoom_in(@tile_row, y, @offset_y, @height)
+      initialize_matrix
+      resize(@width, @height)
+    end
   end
 
   def zoom_out(x, y)
-    @zoom -= 1
-    @offset_x, @tile_col = calc_start_and_offset_zoom_out(@tile_col, x, @offset_x, @width)
-    @offset_y, @tile_row = calc_start_and_offset_zoom_out(@tile_row, y, @offset_y, @height)
-    initialize_matrix
-    resize(@width, @height)
+    if @zoom > 0
+      @zoom -= 1
+      @offset_x, @tile_col = calc_start_and_offset_zoom_out(@tile_col, x, @offset_x, @width)
+      @offset_y, @tile_row = calc_start_and_offset_zoom_out(@tile_row, y, @offset_y, @height)
+      initialize_matrix
+      resize(@width, @height)
+    end
   end
 
   def draw(dc)
