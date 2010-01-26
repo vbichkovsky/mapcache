@@ -14,6 +14,8 @@ class TileManager
   end
 
   def get_tile(x, y, zoom)
+    x = wraparound(x, zoom)
+    y = wraparound(y, zoom)
     tile = Tile.new(x, y, zoom)
     if File.exist?(tile.path)
       tile.load_image
@@ -26,6 +28,13 @@ class TileManager
   end
 
   private
+
+  def wraparound(value, zoom)
+    max = 2 ** zoom
+    value = max - (value.abs % max) if value < 0
+    value = value % max if value >= max
+    value
+  end
 
   def new_thread_from_queue
     Thread.new do
