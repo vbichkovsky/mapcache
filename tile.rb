@@ -1,8 +1,9 @@
 class Tile
+  attr_reader :col, :row, :zoom
   
-  def initialize(x, y, zoom)
-    @x = x
-    @y = y
+  def initialize(col, row, zoom)
+    @col = col
+    @row = row
     @zoom = zoom
   end
 
@@ -23,13 +24,13 @@ class Tile
   end
 
   def path
-    "maps/GoogleMap_#{@zoom}/#{@x}_#{@y}.mgm"
+    "maps/GoogleMap_#{@zoom}/#{@col}_#{@row}.mgm"
   end
 
   def url
-    server = (@x + 2 * @y) % 4
-    galileo = "Galileo"[0, (3 * @x + @y) % 8]
-    "http://mt#{server}.google.com/vt/lyrs=m@115&hl=en&x=#{@x}&y=#{@y}&z=#{@zoom}&s=#{galileo}"
+    server = (@col + 2 * @row) % 4
+    galileo = "Galileo"[0, (3 * @col + @row) % 8]
+    "http://mt#{server}.google.com/vt/lyrs=m@115&hl=en&x=#{@col}&y=#{@row}&z=#{@zoom}&s=#{galileo}"
   end
 
 end

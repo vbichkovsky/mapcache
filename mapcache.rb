@@ -16,7 +16,7 @@ class MapFrame < Wx::Frame
     if File.exist?('config.yml')
       YAML::load_file('config.yml')
     else
-      {'width' => 512, 'height' => 512, 'col' => 288, 'row' => 155,
+      {'width' => 512, 'height' => 512, 'left_col' => 288, 'top_row' => 155,
         'offset_x' => 0, 'offset_y' => 0, 'zoom' => 9}
     end
   end
@@ -24,8 +24,8 @@ class MapFrame < Wx::Frame
   def save_config
     config = {'width' => self.size.width,
       'height' => self.size.height,
-      'col' => @matrix_mgr.tile_col,
-      'row' => @matrix_mgr.tile_row,
+      'left_col' => @matrix_mgr.left_col,
+      'top_row' => @matrix_mgr.top_row,
       'offset_x' => @matrix_mgr.offset_x,
       'offset_y' => @matrix_mgr.offset_y,
       'zoom' => @matrix_mgr.zoom }
@@ -43,9 +43,9 @@ class MapFrame < Wx::Frame
           :size => [config['width'], config['height']])
 
     @tile_mgr = TileManager.new(self)
-    @matrix_mgr = MatrixManager.new(config['col'], config['row'], config['zoom'], 
-                                    config['offset_x'], config['offset_y'], @tile_mgr)
-    @matrix_mgr.resize(self.size.width, self.size.height)
+    @matrix_mgr = MatrixManager.new(config['left_col'], config['top_row'], config['zoom'], 
+                                    config['offset_x'], config['offset_y'], 
+                                    config['width'], config['height'], @tile_mgr)
 
     @pan = false
 
