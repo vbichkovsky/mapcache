@@ -1,5 +1,5 @@
 require 'tile_matrix.rb'
-require 'tile_manager.rb'
+require 'tile.rb'
 
 TILE_WIDTH = 256
 MAX_ZOOM = 19
@@ -7,8 +7,7 @@ MAX_ZOOM = 19
 class MatrixManager
   attr_reader :top_row, :left_col, :offset_x, :offset_y, :zoom
 
-  def initialize(left_col, top_row, zoom, offset_x, offset_y, width, height, tile_mgr)
-    @tile_mgr = tile_mgr
+  def initialize(left_col, top_row, zoom, offset_x, offset_y, width, height)
     @zoom = zoom
     @left_col = left_col
     @top_row = top_row
@@ -39,8 +38,7 @@ class MatrixManager
 
   def draw(dc)
     @matrix.each do |col, row, tile|
-      tile.draw(dc, TILE_WIDTH * (col - 1) + @offset_x, TILE_WIDTH * (row - 1) + @offset_y,
-                TILE_WIDTH, TILE_WIDTH)
+      tile.draw(dc, TILE_WIDTH * (col - 1) + @offset_x, TILE_WIDTH * (row - 1) + @offset_y)
     end
   end
 
@@ -139,9 +137,7 @@ class MatrixManager
   end
 
   def get_tile(col, row, zoom)
-    col = wraparound(col, zoom)
-    row = wraparound(row, zoom)
-    @tile_mgr.get_tile(col, row, zoom)
+    Tile.new(wraparound(col, zoom), wraparound(row, zoom), zoom, 1)
   end
 
   def wraparound(value, zoom)

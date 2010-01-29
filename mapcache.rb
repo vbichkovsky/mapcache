@@ -2,7 +2,7 @@
 
 require 'rubygems'
 require 'wx'
-require 'tile_manager.rb'
+require 'download_manager.rb'
 require 'matrix_manager.rb'
 require 'yaml'
 
@@ -42,10 +42,11 @@ class MapFrame < Wx::Frame
     super(nil, :title => "Map cache", :pos => [150, 25], 
           :size => [config['width'], config['height']])
 
-    @tile_mgr = TileManager.new(self)
+    DownloadManager.observer = self
+
     @matrix_mgr = MatrixManager.new(config['left_col'], config['top_row'], config['zoom'], 
                                     config['offset_x'], config['offset_y'], 
-                                    config['width'], config['height'], @tile_mgr)
+                                    config['width'], config['height'])
 
     @pan = false
 

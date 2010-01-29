@@ -4,7 +4,8 @@ describe MatrixManager, "usual panning and resizing" do
   include MatrixManagerSpecHelper
 
   before do
-    @manager = MatrixManager.new(99, 199, 9, 0, 0, TILE_WIDTH * 3, TILE_WIDTH * 2, tm_stub_wo_zoom)
+    stub_tile_wo_zoom
+    @manager = MatrixManager.new(99, 199, 9, 0, 0, TILE_WIDTH * 3, TILE_WIDTH * 2)
     @initial_dump = matrix_dump
   end
 
@@ -145,7 +146,8 @@ describe MatrixManager, "zooming" do
   include MatrixManagerSpecHelper
 
   before do
-    @manager = MatrixManager.new(99, 199, 8, 0, 0, TILE_WIDTH, TILE_WIDTH, tm_stub_with_zoom)
+    stub_tile_with_zoom
+    @manager = MatrixManager.new(99, 199, 8, 0, 0, TILE_WIDTH, TILE_WIDTH)
   end
 
   it 'initial values' do
@@ -184,7 +186,8 @@ describe MatrixManager, "zooming" do
 
   it 'zooming in for MAX_ZOOM' do
     z = MAX_ZOOM
-    @manager = MatrixManager.new(99, 199, z, 15, 16, TILE_WIDTH, TILE_WIDTH, tm_stub_with_zoom)
+    stub_tile_with_zoom
+    @manager = MatrixManager.new(99, 199, z, 15, 16, TILE_WIDTH, TILE_WIDTH)
     (init_dump = matrix_dump).should == [
                            ["99,199,#{z}", "100,199,#{z}", "101,199,#{z}"],
                            ["99,200,#{z}", "100,200,#{z}", "101,200,#{z}"],
@@ -200,7 +203,8 @@ describe MatrixManager, "zooming" do
   end
 
   it 'zooming out for zoom = 0' do
-    @manager = MatrixManager.new(0, 0, 0, 15, 16, TILE_WIDTH, TILE_WIDTH, tm_stub_with_zoom)
+    stub_tile_with_zoom
+    @manager = MatrixManager.new(0, 0, 0, 15, 16, TILE_WIDTH, TILE_WIDTH)
     (init_dump = matrix_dump).should == [
                                          ["0,0,0", "0,0,0", "0,0,0"],
                                          ["0,0,0", "0,0,0", "0,0,0"],
@@ -221,7 +225,8 @@ describe MatrixManager, "wraparound" do
   include MatrixManagerSpecHelper
 
   before do
-    @manager = MatrixManager.new(0, 0, 2, 0, 0, TILE_WIDTH * 2, TILE_WIDTH * 2, tm_stub_with_zoom)
+    stub_tile_with_zoom
+    @manager = MatrixManager.new(0, 0, 2, 0, 0, TILE_WIDTH * 2, TILE_WIDTH * 2)
   end
 
   it 'initial matrix' do
