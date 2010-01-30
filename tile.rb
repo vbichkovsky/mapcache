@@ -3,7 +3,7 @@ require 'fileutils'
 class Tile
   attr_reader :col, :row, :zoom
   
-  def initialize(col, row, zoom, subzoom)
+  def initialize(col, row, zoom, cov_zoom)
     @col = col
     @row = row
     @zoom = zoom
@@ -12,16 +12,20 @@ class Tile
     else
       DownloadManager.enqueue(self)
     end
-    create_mask(subzoom)
+    create_coverage(cov_zoom)
   end
 
-  def create_mask(subzoom)
-    @mask = Wx::Bitmap.new(TILE_WIDTH, TILE_WIDTH)
-    @mask.draw do |dc| 
-      dc.pen = Wx::TRANSPARENT_PEN
-      dc.brush = Wx::WHITE_BRUSH
-      dc.draw_rectangle(0, 0, TILE_WIDTH, TILE_WIDTH)
-      draw_subtiles(dc, subzoom)
+  def create_coverage(cov_zoom)
+    if !cov_zoom
+      @mask = nil
+    else
+      @mask = Wx::Bitmap.new(TILE_WIDTH, TILE_WIDTH)
+      @mask.draw do |dc| 
+        dc.pen = Wx::TRANSPARENT_PEN
+        dc.brush = Wx::WHITE_BRUSH
+        dc.draw_rectangle(0, 0, TILE_WIDTH, TILE_WIDTH)
+        draw_subtiles(dc, cov_zoom - zoom)
+      end
     end
   end
 
@@ -39,8 +43,10 @@ class Tile
       dc.brush = Wx::GREY_BRUSH
       dc.draw_rectangle(x, y, TILE_WIDTH, TILE_WIDTH)
     end
-    dc.logical_function = Wx::AND
-    dc.draw_bitmap(@mask, x, y, false)
+    if @mask
+      dc.logical_function = Wx::AND
+      dc.draw_bitmap(@mask, x, y, false)
+    end
   end
 
   def path
