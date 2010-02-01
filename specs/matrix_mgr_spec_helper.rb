@@ -6,6 +6,11 @@ end
 
 module MatrixManagerSpecHelper
 
+  def with_defaults(config)
+    {'left_col' => 288, 'top_row' => 155, 'offset_x' => 0, 'offset_y' => 0, 
+      'zoom' => 9, 'show_cov' => true, 'cov_zoom' => 10}.merge(config)
+  end
+
   def matrix_dump
     result = []
     @manager.matrix.each do |col, row, tile| 

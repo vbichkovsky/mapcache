@@ -3,28 +3,36 @@ require 'tile.rb'
 
 TILE_WIDTH = 256
 MAX_ZOOM = 19
-MAX_ZOOM_DIFF = 5
+MAX_ZOOM_DIFF = 8
 
 class MatrixManager
-  attr_reader :top_row, :left_col, :offset_x, :offset_y, :zoom, :show_coverage, :coverage_zoom
+  attr_reader :top_row, :left_col, :offset_x, :offset_y, :zoom, :show_cov, :cov_zoom
 
-  def initialize(left_col, top_row, zoom, offset_x, offset_y, width, height, show_cov, cov_zoom)
-    @show_coverage = show_cov
-    @coverage_zoom = cov_zoom
-    @zoom = zoom
-    @left_col = left_col
-    @top_row = top_row
-    @offset_x = offset_x
-    @offset_y = offset_y
+  def initialize(width, height, config)
+    @show_cov = config['show_cov']
+    @cov_zoom = config['cov_zoom']
+    @zoom = config['zoom']
+    @left_col = config['left_col']
+    @top_row = config['top_row']
+    @offset_x = config['offset_x']
+    @offset_y = config['offset_y']
     @width = width
     @height = height
     create_matrix
   end
 
+  def config
+    result = {}
+    %w(left_col top_row offset_x offset_y zoom show_cov cov_zoom).each do |attr|
+      result[attr] = self.send(attr)
+    end
+    result
+  end
+
   def zoom_in(x, y)
     if @zoom < MAX_ZOOM
       @zoom += 1
-      @coverage_zoom = zoom + 1 if coverage_zoom - zoom < 1 
+      @cov_zoom = zoom + 1 if cov_zoom - zoom < 1 
       @offset_x, @left_col = calc_start_and_offset_zoom_in(@left_col, x, @offset_x, @width)
       @offset_y, @top_row = calc_start_and_offset_zoom_in(@top_row, y, @offset_y, @height)
       create_matrix
@@ -34,7 +42,7 @@ class MatrixManager
   def zoom_out(x, y)
     if @zoom > 0
       @zoom -= 1
-      @coverage_zoom = zoom + MAX_ZOOM_DIFF if coverage_zoom - zoom > MAX_ZOOM_DIFF
+      @cov_zoom = zoom + MAX_ZOOM_DIFF if cov_zoom - zoom > MAX_ZOOM_DIFF
       @offset_x, @left_col = calc_start_and_offset_zoom_out(@left_col, x, @offset_x, @width)
       @offset_y, @top_row = calc_start_and_offset_zoom_out(@top_row, y, @offset_y, @height)
       create_matrix
@@ -46,24 +54,24 @@ class MatrixManager
       tile.draw(dc, TILE_WIDTH * (col - 1) + @offset_x, TILE_WIDTH * (row - 1) + @offset_y)
     end
     dc.draw_text("zoom: #{zoom}", 10, 10)
-    dc.draw_text("coverage: #{coverage_zoom}", 10, 25) if show_coverage
+    dc.draw_text("coverage: #{cov_zoom}", 10, 25) if show_cov
   end
 
   def toggle_coverage
-    @show_coverage = !show_coverage
+    @show_cov = !show_cov
     recreate_coverage
   end
 
   def coverage_zoom_in
-    if coverage_zoom - zoom < MAX_ZOOM_DIFF
-      @coverage_zoom += 1
+    if cov_zoom - zoom < MAX_ZOOM_DIFF
+      @cov_zoom += 1
       recreate_coverage
     end
   end
 
   def coverage_zoom_out
-    if coverage_zoom - zoom > 1
-      @coverage_zoom -= 1
+    if cov_zoom - zoom > 1
+      @cov_zoom -= 1
       recreate_coverage
     end
   end
@@ -163,8 +171,7 @@ class MatrixManager
   end
 
   def get_tile(col, row, zoom)
-    Tile.new(wraparound(col, zoom), wraparound(row, zoom), zoom, 
-             show_coverage && coverage_zoom)
+    Tile.new(wraparound(col, zoom), wraparound(row, zoom), zoom, show_cov && cov_zoom)
   end
 
   def wraparound(value, zoom)
@@ -176,7 +183,7 @@ class MatrixManager
 
   def recreate_coverage
     @matrix.each do |col, row, tile|
-      tile.create_coverage(show_coverage && coverage_zoom)
+      tile.create_coverage(show_cov && cov_zoom)
     end
   end
 

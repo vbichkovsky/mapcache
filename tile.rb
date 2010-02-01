@@ -24,7 +24,7 @@ class Tile
         dc.pen = Wx::TRANSPARENT_PEN
         dc.brush = Wx::WHITE_BRUSH
         dc.draw_rectangle(0, 0, TILE_WIDTH, TILE_WIDTH)
-        draw_subtiles(dc, cov_zoom - zoom)
+        draw_subtiles(dc, cov_zoom)
       end
     end
   end
@@ -49,34 +49,32 @@ class Tile
     end
   end
 
-  def path
-    Tile.path_for(@col, @row, @zoom)
-  end
-
   def url
     server = (@col + 2 * @row) % 4
     galileo = "Galileo"[0, (3 * @col + @row) % 8]
     "http://mt#{server}.google.com/vt/lyrs=m@115&hl=en&x=#{@col}&y=#{@row}&z=#{@zoom}&s=#{galileo}"
   end
 
-  def self.path_for(col, row, zoom)
+  def path
     "maps/GoogleMap_#{zoom}/#{col}_#{row}.mgm"
   end
 
   private
 
-  def draw_subtiles(dc, subzoom)
+  def draw_subtiles(dc, cov_zoom)
     dc.brush = Wx::GREEN_BRUSH
-    scale = 2 ** subzoom
-    (0..scale - 1).each do |subcol|
-      (0..scale - 1).each do |subrow|
-        if File.exist?(Tile.path_for(@col * scale + subcol, 
-                                     @row * scale + subrow, 
-                                     zoom + subzoom) )
-            dc.draw_rectangle(subcol * TILE_WIDTH / scale, 
-                              subrow * TILE_WIDTH / scale, 
-                              TILE_WIDTH / scale, TILE_WIDTH / scale)
-        end
+    diff = cov_zoom - zoom
+    scale = 2 ** diff
+    Dir["maps/GoogleMap_#{cov_zoom}/*.mgm"].each do |file|
+      cov_col, cov_row = File.basename(file, '.mgm').split('_')
+      cov_col = cov_col.to_i
+      cov_row = cov_row.to_i
+      if ((cov_col / scale) == col) && ((cov_row / scale) == row)
+        subcol = cov_col % scale
+        subrow = cov_row % scale
+        dc.draw_rectangle(subcol * TILE_WIDTH / scale, 
+                          subrow * TILE_WIDTH / scale, 
+                          TILE_WIDTH / scale, TILE_WIDTH / scale)
       end
     end
   end    

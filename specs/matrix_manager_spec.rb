@@ -5,7 +5,8 @@ describe MatrixManager, "usual panning and resizing" do
 
   before do
     stub_tile_wo_zoom
-    @manager = MatrixManager.new(99, 199, 9, 0, 0, TILE_WIDTH * 3, TILE_WIDTH * 2)
+    @manager = MatrixManager.new(TILE_WIDTH * 3, TILE_WIDTH * 2, 
+                                 with_defaults('left_col' => 99, 'top_row' => 199, 'zoom' => 9))
     @initial_dump = matrix_dump
   end
 
@@ -147,7 +148,8 @@ describe MatrixManager, "zooming" do
 
   before do
     stub_tile_with_zoom
-    @manager = MatrixManager.new(99, 199, 8, 0, 0, TILE_WIDTH, TILE_WIDTH)
+    @manager = MatrixManager.new(TILE_WIDTH, TILE_WIDTH, 
+                                 with_defaults('left_col' => 99, 'top_row' => 199, 'zoom' => 8))
   end
 
   it 'initial values' do
@@ -187,7 +189,8 @@ describe MatrixManager, "zooming" do
   it 'zooming in for MAX_ZOOM' do
     z = MAX_ZOOM
     stub_tile_with_zoom
-    @manager = MatrixManager.new(99, 199, z, 15, 16, TILE_WIDTH, TILE_WIDTH)
+    @manager = MatrixManager.new(TILE_WIDTH, TILE_WIDTH, with_defaults(
+         'left_col' => 99, 'top_row' => 199, 'zoom' => z, 'offset_x' => 15, 'offset_y' => 16))
     (init_dump = matrix_dump).should == [
                            ["99,199,#{z}", "100,199,#{z}", "101,199,#{z}"],
                            ["99,200,#{z}", "100,200,#{z}", "101,200,#{z}"],
@@ -204,7 +207,8 @@ describe MatrixManager, "zooming" do
 
   it 'zooming out for zoom = 0' do
     stub_tile_with_zoom
-    @manager = MatrixManager.new(0, 0, 0, 15, 16, TILE_WIDTH, TILE_WIDTH)
+    @manager = MatrixManager.new(TILE_WIDTH, TILE_WIDTH, with_defaults(
+         'left_col' => 0, 'top_row' => 0, 'zoom' => 0, 'offset_x' => 15, 'offset_y' => 16))
     (init_dump = matrix_dump).should == [
                                          ["0,0,0", "0,0,0", "0,0,0"],
                                          ["0,0,0", "0,0,0", "0,0,0"],
@@ -226,7 +230,8 @@ describe MatrixManager, "wraparound" do
 
   before do
     stub_tile_with_zoom
-    @manager = MatrixManager.new(0, 0, 2, 0, 0, TILE_WIDTH * 2, TILE_WIDTH * 2)
+    @manager = MatrixManager.new(TILE_WIDTH * 2, TILE_WIDTH * 2, with_defaults(
+         'left_col' => 0, 'top_row' => 0, 'zoom' => 2))
   end
 
   it 'initial matrix' do
