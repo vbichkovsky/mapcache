@@ -1,5 +1,7 @@
 require 'download_manager.rb'
 require 'matrix_manager.rb'
+require 'export_dialog.rb'
+require 'mgmaps_export.rb'
 
 class MapPanel < Wx::Panel
   
@@ -25,6 +27,11 @@ class MapPanel < Wx::Panel
       when ?] : 
           @mgr.coverage_zoom_in
           draw_map
+      when ?e :
+          d = ExportDialog.new(parent)
+          if d.show_modal == Wx::ID_OK
+            MGMapsExport.export(d.tiles_per_file, d.hash_size)
+          end
       end
     end
 

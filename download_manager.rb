@@ -4,13 +4,17 @@ require 'thread'
 class DownloadManager
 
   @queue = Queue.new
-  Thread.new do
-    loop {new_thread_from_queue if !@queue.empty?}
+  @thread = Thread.new do
+    loop do 
+      sleep if @queue.empty?
+      new_thread_from_queue
+    end
   end
 
   def self.enqueue(tile)
     puts "enqueued #{tile.url}"
     @queue << tile
+    @thread.run
   end
 
   def self.observer=(observer)
