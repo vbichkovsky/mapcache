@@ -12,7 +12,6 @@ class DownloadManager
   end
 
   def self.enqueue(tile)
-    puts "enqueued #{tile.url}"
     @queue << tile
     @thread.run
   end

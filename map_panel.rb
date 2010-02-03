@@ -7,62 +7,42 @@ class MapPanel < Wx::Panel
   
   def initialize(parent, config)
     super(parent, :style => Wx::NO_BORDER)
-
+    @pan = false
     DownloadManager.observer = self
-
     @mgr = MatrixManager.new(self.size.width, self.size.height, config)
 
     evt_paint {|event| draw_map}
-
-    evt_size {|event| @mgr.resize(event.size.width, event.size.height)}
+    
+    evt_size {|event| resize_map(event.size.width, event.size.height) }
 
     evt_char do |event|
       case event.key_code
-        when ?m : 
-          @mgr.toggle_coverage
-          draw_map
-      when ?[ : 
-          @mgr.coverage_zoom_out
-          draw_map
-      when ?] : 
-          @mgr.coverage_zoom_in
-          draw_map
-      when ?e :
-          d = ExportDialog.new(parent)
-          if d.show_modal == Wx::ID_OK
-            MGMapsExport.export(d.tiles_per_file, d.hash_size)
-          end
+        when ?m : toggle_coverage
+        when ?[ : coverage_zoom_out
+        when ?] : coverage_zoom_in
+        when ?e : export_dialog
       end
     end
 
-    @pan = false
-
-    evt_left_down do |event|
-      @pan = true
-      @start_x = event.x
-      @start_y = event.y
+    evt_left_down do |event| 
+      pan_start(event.x, event.y)
       event.skip
     end
 
-    evt_left_up {|event| @pan = false}
+    evt_left_up {|event| pan_end}
 
-    evt_motion do |event|
-      if @pan
-        @mgr.pan(event.x - @start_x, event.y - @start_y)
-        @start_x = event.x
-        @start_y = event.y
-        draw_map
-      end
-    end
+    evt_motion {|event| pan(event.x, event.y) }
 
     evt_mousewheel do |event|
       if event.wheel_rotation > 0
-        @mgr.zoom_in(event.x, event.y)
+        zoom_in(event.x, event.y)
       else
-        @mgr.zoom_out(event.x, event.y)
+        zoom_out(event.x, event.y)
       end
-      draw_map
     end
+
+    parent.set_zoom(@mgr.zoom)
+    parent.set_coverage_zoom(@mgr.cov_value)
 
     set_focus
   end
@@ -71,13 +51,78 @@ class MapPanel < Wx::Panel
     @mgr.config
   end
 
+  def tile_loaded(tile)
+    self.refresh
+  end
+
+  private
+
   def draw_map
     paint {|dc| @mgr.draw(dc) }
-  end    
+  end
 
-  def tile_loaded(tile)
-    puts "downloaded #{tile.url}"
-    self.refresh
+  def toggle_coverage
+    draw_with_hourglass { @mgr.toggle_coverage }
+    parent.set_coverage_zoom(@mgr.cov_value)
+  end
+
+  def zoom_in(x, y)
+    draw_with_hourglass { @mgr.zoom_in(x, y) }
+    parent.set_zoom(@mgr.zoom)
+    parent.set_coverage_zoom(@mgr.cov_value)
+  end
+
+  def zoom_out(x, y)
+    draw_with_hourglass { @mgr.zoom_out(x, y) }
+    parent.set_zoom(@mgr.zoom)
+    parent.set_coverage_zoom(@mgr.cov_value)
+  end
+
+  def coverage_zoom_in
+    draw_with_hourglass { @mgr.coverage_zoom_in }
+    parent.set_coverage_zoom(@mgr.cov_value)
+  end
+
+  def coverage_zoom_out
+    draw_with_hourglass { @mgr.coverage_zoom_out }
+    parent.set_coverage_zoom(@mgr.cov_value)
+  end
+
+  def export_dialog
+    d = ExportDialog.new(parent)
+    if d.show_modal == Wx::ID_OK
+      MGMapsExport.export(d.tiles_per_file, d.hash_size)
+    end
+  end
+
+  def resize_map(width, height)
+    @mgr.resize(width, height)
+  end
+
+  def pan_start(x, y)
+    @pan = true
+    @start_x = x
+    @start_y = y
+  end
+
+  def pan_end
+    @pan = false
+  end
+
+  def pan(x, y)
+    if @pan
+      @mgr.pan(x - @start_x, y - @start_y)
+      @start_x = x
+      @start_y = y
+      draw_map
+    end
+  end
+
+  def draw_with_hourglass
+    self.cursor = Wx::HOURGLASS_CURSOR
+    yield
+    draw_map
+    self.cursor = Wx::NULL_CURSOR    
   end
 
 end

@@ -7,25 +7,42 @@ class MGMapsExport
 
   def self.export(tiles_per_file, hash_size)
     if EXPORT_ROOT.exist?
-      puts 'Cannot export: export directory already exists!'
+      error_dlg('Cannot export: export directory already exists!')
       return
     end
 
     files = Dir['maps/*/*.mgm']
 
-    if tiles_per_file > 1
-      export_as_mtpf(files, tiles_per_file)
-    elsif hash_size > 1
-      export_as_hashed(files, hash_size)
-    else
-      export_as_copy(files)
-    end
+    catch :cancelled do
+      if tiles_per_file > 1
+        export_as_mtpf(files, tiles_per_file)
+      elsif hash_size > 1
+        export_as_hashed(files, hash_size)
+      else
+        export_as_copy(files)
+      end
 
-    create_conf_file(tiles_per_file, hash_size)
-    puts "export completed"
+      create_conf_file(tiles_per_file, hash_size)
+      success_msg
+    end
   end
 
   private
+
+  def self.error_dlg(msg)
+      Wx::MessageDialog.new(Wx::THE_APP.top_window, msg, 'Export',
+                            Wx::OK|Wx::ICON_ERROR).show_modal
+  end
+
+  def self.success_msg
+      Wx::MessageDialog.new(Wx::THE_APP.top_window, 'Export completed', 'Export',
+                            Wx::OK|Wx::ICON_INFORMATION).show_modal
+  end
+
+  def self.confirm(msg)
+      Wx::MessageDialog.new(Wx::THE_APP.top_window, msg, 'Export',
+                            Wx::YES_NO|Wx::ICON_QUESTION).show_modal == Wx::ID_YES
+  end
 
   def self.create_conf_file(tiles_per_file, hash_size)
     File.open('export/cache.conf', 'w') do |file|
@@ -45,9 +62,12 @@ class MGMapsExport
       yield file
       files_done += 1
       if !progress.update(files_done)
-        puts "Cancelled by the user"
-        progress.destroy
-        break
+        if confirm('Cancel export?') 
+          progress.destroy
+          throw :cancelled
+        else
+          progress.resume
+        end
       end
     end
   end

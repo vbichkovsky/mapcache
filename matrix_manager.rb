@@ -53,8 +53,6 @@ class MatrixManager
     @matrix.each do |col, row, tile|
       tile.draw(dc, TILE_WIDTH * (col - 1) + @offset_x, TILE_WIDTH * (row - 1) + @offset_y)
     end
-    dc.draw_text("zoom: #{zoom}", 10, 10)
-    dc.draw_text("coverage: #{cov_zoom}", 10, 25) if show_cov
   end
 
   def toggle_coverage
@@ -130,6 +128,10 @@ class MatrixManager
     end
   end
 
+  def cov_value
+    show_cov && cov_zoom
+  end
+
   private
 
   def calc_start_and_offset_zoom_in(start_idx, cursor_pos, offset, viewport_size)
@@ -171,7 +173,7 @@ class MatrixManager
   end
 
   def get_tile(col, row, zoom)
-    Tile.new(wraparound(col, zoom), wraparound(row, zoom), zoom, show_cov && cov_zoom)
+    Tile.new(wraparound(col, zoom), wraparound(row, zoom), zoom, cov_value)
   end
 
   def wraparound(value, zoom)
