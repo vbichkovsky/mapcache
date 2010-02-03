@@ -1,9 +1,4 @@
-#!/usr/bin/ruby
-
-require 'rubygems'
-require 'wx'
 require 'yaml'
-require 'map_panel.rb'
 
 class MapFrame < Wx::Frame
 
@@ -13,7 +8,7 @@ class MapFrame < Wx::Frame
 
   def initialize
     config = load_config
-    super(nil, :title => "Map cache", 
+    super(nil, :title => "mapcache 0.1", 
           :pos => [config['left'], config['top']],
           :size => [config['width'], config['height']] )
 
@@ -62,10 +57,3 @@ class MapFrame < Wx::Frame
   end
 
 end
-
-Wx::App.run do 
-  MapFrame.new
-end
-
-
-

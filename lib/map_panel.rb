@@ -1,8 +1,3 @@
-require 'download_manager.rb'
-require 'matrix_manager.rb'
-require 'export_dialog.rb'
-require 'mgmaps_export.rb'
-
 class MapPanel < Wx::Panel
   
   def initialize(parent, config)
@@ -21,6 +16,7 @@ class MapPanel < Wx::Panel
         when ?[ : coverage_zoom_out
         when ?] : coverage_zoom_in
         when ?e : export_dialog
+        when Wx::K_F1: about_box
       end
     end
 
@@ -123,6 +119,15 @@ class MapPanel < Wx::Panel
     yield
     draw_map
     self.cursor = Wx::NULL_CURSOR    
+  end
+
+  def about_box
+    box = Wx::AboutDialogInfo.new
+    box.name = "mapcache"
+    box.version = "0.1"
+    box.description = IO.read('README')
+    box.add_developer 'Valentine Bichkovsky'
+    Wx::about_box(box)
   end
 
 end

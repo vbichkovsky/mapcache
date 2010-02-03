@@ -1,0 +1,31 @@
+= mapcache
+
+== Description
+
+Interactive GoogleMaps browser, caches all downloaded tiles on disk.
+
+== Install
+
+  gem install mapcache
+
+== Features
+
+* download map tiles as you browse the map
+* show tiles already on disk for (zoom + 1)..(zoom + 8)
+* export downloaded tiles in mgmaps[http://www.mgmaps.com] format
+
+== Usage
+
+* drag map to pan
+* mouse wheel - zoom in/out
+* m - toggle coverage
+* [] - coverage zoom in/out
+* e - export tiles to mgmaps
+
+== Files and directories
+
+config.yml - your settings are saved in this file
+
+<current dir>/maps - this is where map tiles are stored
+
+<current dir>/export - this is where export goes to

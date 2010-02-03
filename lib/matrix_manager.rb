@@ -1,6 +1,3 @@
-require 'tile_matrix.rb'
-require 'tile.rb'
-
 TILE_WIDTH = 256
 MAX_ZOOM = 19
 MAX_ZOOM_DIFF = 8

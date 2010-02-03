@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../tile_matrix.rb'
+require File.dirname(__FILE__) + '/../lib/tile_matrix.rb'
 
 describe TileMatrix do
 

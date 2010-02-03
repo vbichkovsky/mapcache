@@ -1,4 +1,5 @@
-require File.dirname(__FILE__) + '/../matrix_manager.rb'
+require File.dirname(__FILE__) + '/../lib/matrix_manager.rb'
+require File.dirname(__FILE__) + '/../lib/tile.rb'
 
 class MatrixManager
   attr_reader :matrix
