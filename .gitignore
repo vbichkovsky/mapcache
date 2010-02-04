@@ -1,3 +1,5 @@
 config.yml
 maps
 export
+pkg
+*.gemspec

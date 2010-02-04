@@ -8,7 +8,7 @@ class MapFrame < Wx::Frame
 
   def initialize
     config = load_config
-    super(nil, :title => "mapcache 0.1", 
+    super(nil, :title => "mapcache",
           :pos => [config['left'], config['top']],
           :size => [config['width'], config['height']] )
 

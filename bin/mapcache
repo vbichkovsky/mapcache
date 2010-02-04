@@ -5,4 +5,6 @@ Dir[File.dirname(__FILE__) + '/../lib/*.rb'].each do |src|
   require src
 end
 
+APP_VERSION = IO.read(File.dirname(__FILE__) + '/../VERSION')
+
 Wx::App.run { MapFrame.new }

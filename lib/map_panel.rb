@@ -124,9 +124,16 @@ class MapPanel < Wx::Panel
   def about_box
     box = Wx::AboutDialogInfo.new
     box.name = "mapcache"
-    box.version = "0.1"
-    box.description = IO.read('README')
+    box.version = APP_VERSION
+    box.description = "
+      click and drag to pan
+      mouse wheel - zoom in/out
+      m - toggle coverage
+      [] - coverage zoom in/out
+      e - export to mgmaps
+      for more info visit http://wiki.github.com/vbichkovsky/mapcache/"
     box.add_developer 'Valentine Bichkovsky'
+    box.web_site = "http://wiki.github.com/vbichkovsky/mapcache/"
     Wx::about_box(box)
   end
 
