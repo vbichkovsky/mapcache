@@ -1,9 +1,11 @@
 require 'httpclient'
 require 'thread'
+require 'monitor'
 
 class DownloadManager
 
   @http = HTTPClient.new
+  @lock = Monitor.new
   @queue = Queue.new
   @thread = Thread.new do
     loop do
@@ -30,7 +32,7 @@ class DownloadManager
       FileUtils.mkdir_p dir if !File.exist?(dir)
       download(tile)
       tile.load_image
-      @observer.tile_loaded(tile)
+      @lock.synchronize { @observer.tile_loaded(tile) }
     end
   end
 
