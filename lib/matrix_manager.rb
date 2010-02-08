@@ -29,7 +29,7 @@ class MatrixManager
   def zoom_in(x, y)
     if @zoom < MAX_ZOOM
       @zoom += 1
-      @cov_zoom = zoom + 1 if cov_zoom - zoom < 1 
+      @cov_zoom = zoom + 1 if cov_zoom - zoom < 1
       @offset_x, @left_col = calc_start_and_offset_zoom_in(@left_col, x, @offset_x, @width)
       @offset_y, @top_row = calc_start_and_offset_zoom_in(@top_row, y, @offset_y, @height)
       create_matrix
@@ -49,6 +49,15 @@ class MatrixManager
   def draw(dc)
     @matrix.each do |col, row, tile|
       tile.draw(dc, TILE_WIDTH * (col - 1) + @offset_x, TILE_WIDTH * (row - 1) + @offset_y)
+    end
+  end
+
+  def draw_tile(dc, the_tile)
+    @matrix.each do |col, row, tile|
+      if tile == the_tile
+        tile.draw(dc, TILE_WIDTH * (col - 1) + @offset_x, TILE_WIDTH * (row - 1) + @offset_y)
+        break
+      end
     end
   end
 
@@ -140,8 +149,8 @@ class MatrixManager
   def calc_start_and_offset_zoom_out(start_idx, cursor_pos, offset, viewport_size)
     cursor_tile_idx = start_idx + (cursor_pos - offset).to_i / TILE_WIDTH + 1
     middle_tile_idx = cursor_tile_idx / 2
-    from_edge = ( (cursor_pos - offset).to_i % TILE_WIDTH + 
-                  (cursor_tile_idx.even? ? 0 : TILE_WIDTH) ) / 2
+    from_edge = ( (cursor_pos - offset).to_i % TILE_WIDTH +
+                  ((cursor_tile_idx % 2 == 0) ? 0 : TILE_WIDTH) ) / 2
     calc_offset_and_first_idx(middle_tile_idx, viewport_size, from_edge)
   end
 
@@ -154,7 +163,7 @@ class MatrixManager
     @matrix = TileMatrix.new
     @matrix[0,0] = get_tile(@left_col, @top_row, @zoom)
     resize(@width, @height)
-  end    
+  end
 
   def get_tiles(what, which)
     size = (what == :row ? @matrix.width - 1 : @matrix.height - 1)

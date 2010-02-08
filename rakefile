@@ -9,10 +9,11 @@ begin
     s.email     = "valentin@livas.lv"
     s.homepage = "http://wiki.github.com/vbichkovsky/mapcache/"
     s.summary = "Google Maps tile browser-downloader and manager"
-    s.files = FileList['lib/*.rb', 'bin/mapcache', 'spec/*.rb', '[A-Z]*'].to_a
+    s.files = FileList['lib/**/*.rb', 'bin/mapcache', 'spec/*.rb', '[A-Z]*'].to_a
     s.executables = ['mapcache']
     s.extra_rdoc_files = ["README.rdoc"]
     s.add_dependency("wxruby", ">= 2.0.1")
+    s.add_dependency("httpclient")
     s.add_development_dependency('rspec')
   end
   Jeweler::GemcutterTasks.new

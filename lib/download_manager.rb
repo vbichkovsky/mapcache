@@ -1,11 +1,12 @@
-require 'net/http'
+require 'httpclient'
 require 'thread'
 
 class DownloadManager
 
+  @http = HTTPClient.new
   @queue = Queue.new
   @thread = Thread.new do
-    loop do 
+    loop do
       sleep if @queue.empty?
       new_thread_from_queue
     end
@@ -34,11 +35,9 @@ class DownloadManager
   end
 
   def self.download(tile)
-    uri = URI.parse(tile.url)
-    req = Net::HTTP::Get.new(uri.path, {"User-Agent" => "mapcache"})
-    res = Net::HTTP.new(uri.host).start {|http| http.request(req)}
-    if res.code == "200"
-      File.open(tile.path, 'wb') {|f| f.write(res.body)}
+    res = @http.get(tile.url, {}, {"User-Agent" => "mapcache"})
+    if res.status == 200
+      File.open(tile.path, 'wb') {|f| f.write(res.content)}
     end
   end
 

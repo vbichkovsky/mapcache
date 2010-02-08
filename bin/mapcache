@@ -5,6 +5,10 @@ Dir[File.dirname(__FILE__) + '/../lib/*.rb'].each do |src|
   require src
 end
 
+if RUBY_PLATFORM =~ /mswin/
+  require File.dirname(__FILE__) + '/../lib/mswin/workarounds.rb'
+end
+
 APP_VERSION = IO.read(File.dirname(__FILE__) + '/../VERSION')
 
 Wx::App.run { MapFrame.new }

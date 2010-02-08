@@ -1,5 +1,5 @@
 class MapPanel < Wx::Panel
-  
+
   def initialize(parent, config)
     super(parent, :style => Wx::NO_BORDER)
     @pan = false
@@ -7,7 +7,7 @@ class MapPanel < Wx::Panel
     @mgr = MatrixManager.new(self.size.width, self.size.height, config)
 
     evt_paint {|event| draw_map}
-    
+
     evt_size {|event| resize_map(event.size.width, event.size.height) }
 
     evt_char do |event|
@@ -20,7 +20,13 @@ class MapPanel < Wx::Panel
       end
     end
 
-    evt_left_down do |event| 
+    # allow download threads to execute
+    evt_idle do |e|
+      Thread.pass
+      e.request_more
+    end
+
+    evt_left_down do |event|
       pan_start(event.x, event.y)
       event.skip
     end
@@ -48,13 +54,13 @@ class MapPanel < Wx::Panel
   end
 
   def tile_loaded(tile)
-    self.refresh
+    paint {|dc| @mgr.draw_tile(dc, tile)}
   end
 
   private
 
   def draw_map
-    paint {|dc| @mgr.draw(dc) }
+    paint_buffered {|dc| @mgr.draw(dc) }
   end
 
   def toggle_coverage
@@ -118,7 +124,7 @@ class MapPanel < Wx::Panel
     self.cursor = Wx::HOURGLASS_CURSOR
     yield
     draw_map
-    self.cursor = Wx::NULL_CURSOR    
+    self.cursor = Wx::NULL_CURSOR
   end
 
   def about_box

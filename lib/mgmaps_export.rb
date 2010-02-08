@@ -53,16 +53,16 @@ class MGMapsExport
   end
 
   def self.export_each_file(files)
-    progress = Wx::ProgressDialog.new('Export', 'Processing files...', 
+    progress = Wx::ProgressDialog.new('Export', 'Processing files...',
                                       files.size, Wx::THE_APP.top_window,
-                                      Wx::PD_AUTO_HIDE | Wx::PD_APP_MODAL | 
+                                      Wx::PD_AUTO_HIDE | Wx::PD_APP_MODAL |
                                       Wx::PD_CAN_ABORT | Wx::PD_REMAINING_TIME)
     files_done = 0
     files.each do |file|
       yield file
       files_done += 1
       if !progress.update(files_done)
-        if confirm('Cancel export?') 
+        if confirm('Cancel export?')
           progress.destroy
           throw :cancelled
         else
@@ -90,7 +90,7 @@ class MGMapsExport
       dest = EXPORT_ROOT + zoomdir + subdir + src.basename
       FileUtils.mkdir_p dest.dirname
       FileUtils.cp file, dest
-    end    
+    end
   end
 
   def self.export_as_mtpf(files, tiles_per_file)
@@ -108,12 +108,12 @@ class MGMapsExport
       dest = EXPORT_ROOT + zoomdir + Pathname.new("#{dest_x}_#{dest_y}.mgm")
       blank_mtpf_file(dest, tiles_per_file) if !File.exists?(dest)
       add_tile_to_file(src, dest, rel_x, rel_y)
-    end    
+    end
   end
 
   def self.tpf_xy(tpf)
     log2 = (Math.log(tpf) / Math.log(2)).to_i
-    if log2.even?
+    if log2 % 2 == 0
       tpf_x = Math.sqrt(tpf).to_i
       tpf_y = tpf_x
     else
@@ -129,10 +129,10 @@ class MGMapsExport
   end
 
   def self.add_tile_to_file(src, dest, rel_x, rel_y)
-    File.open(dest, 'r+') do |file|
+    File.open(dest, 'r+b') do |file|
       count = file.read(2).unpack('n').first + 1
       file.seek(0, IO::SEEK_END)
-      file.write(IO.read(src))
+      file.write(read_binary(src))
       pos = file.pos
       file.rewind
       file.write [count].pack('n')
@@ -141,6 +141,10 @@ class MGMapsExport
       file.write rel_y.chr
       file.write [pos].pack('N')
     end
+  end
+
+  def self.read_binary(filename)
+    open(filename, "rb") {|io| io.read }
   end
 
 end
