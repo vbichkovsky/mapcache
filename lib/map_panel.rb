@@ -20,12 +20,6 @@ class MapPanel < Wx::Panel
       end
     end
 
-    # allow download threads to execute
-    evt_idle do |e|
-      Thread.pass
-      e.request_more
-    end
-
     evt_left_down do |event|
       pan_start(event.x, event.y)
       event.skip
