@@ -12,6 +12,6 @@ end
 APP_VERSION = IO.read(File.dirname(__FILE__) + '/../VERSION')
 
 Wx::App.run do
-  Wx::Timer.every(1000) { Thread.pass } # allow other threads to proceed
+  Wx::Timer.every(100) { Thread.pass } # allow other threads to proceed
   MapFrame.new
 end
